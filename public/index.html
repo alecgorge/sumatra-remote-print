@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Sylvia Printing</title>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.2.0/dropzone.js"></script>
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.2.0/dropzone.css" />
+	<style type="text/css">
+	
+	</style>
+</head>
+<body>
+	<form
+		action="/print"
+		class="dropzone"
+		id="print-drop"
+		enctype="multipart/form-data"
+		method="post"
+	></form>
+
+	<ul id="status">
+
+	</ul>
+
+	<script type="text/javascript">
+	Dropzone.options.printDrop = {
+		paramName: "pdf", // The name that will be used to transfer the file
+		maxFilesize: 32, // MB
+		uploadMultiple: false,
+		acceptedFiles: 'application/pdf',
+		accept: function (f, done) {
+			if(f.name.slice(-3) == "pdf") {
+				done();
+			}
+			else {
+				done("Only PDFs are allowed!");
+			}
+		},
+		init: function () {
+			this.on('success', function (e, resp) {
+				var ws = new WebSocket('/jobs/' +JSON.parse(res.job_id)+'/live');
+
+				ws.onmessage = function (e) {
+					var m = e.data;
+
+					$("#status").append($("<li></li>").text(m));
+				};
+
+				ws.onclose = function (e) {
+					$("#status").append($("<li></li>").text('Finished: ' + (e.code - 4000)));
+				}
+			});
+		}
+	};
+	</script>
+</body>
+</html>
